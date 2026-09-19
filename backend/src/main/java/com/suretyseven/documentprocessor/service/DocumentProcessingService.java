@@ -69,10 +69,9 @@ public class DocumentProcessingService {
     @Async("documentProcessingExecutor")
     public void processDocumentAsync(String documentId) {
         try {
-            transition(documentId, DocumentStatus.PROCESSING, null, null);
-
             Document document = documentRepository.findById(documentId)
                     .orElseThrow(() -> new IllegalStateException("Document not found: " + documentId));
+            transition(document, DocumentStatus.PROCESSING, null, null);
 
             FileType fileType = FileType.fromFilename(document.getFilename())
                     .orElseThrow(() -> new IllegalStateException(
@@ -86,22 +85,22 @@ public class DocumentProcessingService {
                 log.info("documentId={} attempt={}/{} outcome={}", documentId, attempt, maxAttempts, result.outcome());
 
                 if (result.outcome() == ProcessOutcome.SUCCESS) {
-                    handleSuccess(documentId, document, result, attempt);
+                    handleSuccess(document, result, attempt);
                     return;
                 }
 
                 if (result.outcome() == ProcessOutcome.INVALID_RESULT) {
                     // Deterministic outcome for this file — do not retry.
-                    transition(documentId, DocumentStatus.FAILED, ProcessOutcome.INVALID_RESULT.name(), attempt);
+                    transition(document, DocumentStatus.FAILED, ProcessOutcome.INVALID_RESULT.name(), attempt);
                     return;
                 }
 
                 // TIMEOUT or ERROR — retryable flakiness.
-                transition(documentId, DocumentStatus.FAILED, result.outcome().name(), attempt);
+                transition(document, DocumentStatus.FAILED, result.outcome().name(), attempt);
                 if (attempt == maxAttempts) {
                     return; // terminal — status stays FAILED
                 }
-                transition(documentId, DocumentStatus.PROCESSING, null, attempt);
+                transition(document, DocumentStatus.PROCESSING, null, attempt);
                 sleepBackoff();
             }
         } catch (Exception e) {
@@ -112,20 +111,21 @@ public class DocumentProcessingService {
         }
     }
 
-    private void handleSuccess(String documentId, Document document, ProcessResult result, int attempt) {
+    private void handleSuccess(Document document, ProcessResult result, int attempt) {
         Validator validator = validatorRegistry.get(document.getDocumentType());
         ValidationResult validation = validator.validate(result.extractedData());
         if (validation.isValid()) {
-            markProcessed(documentId, result.extractedData(), attempt);
+            markProcessed(document, result.extractedData(), attempt);
         } else {
             String reason = "VALIDATION_FAILED: " + String.join(", ", validation.getErrors());
-            transition(documentId, DocumentStatus.FAILED, reason, attempt);
+            transition(document, DocumentStatus.FAILED, reason, attempt);
         }
     }
 
-    private void transition(String documentId, DocumentStatus status, String reason, Integer retryCount) {
-        Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new IllegalStateException("Document not found: " + documentId));
+    // Reuses the document already loaded by processDocumentAsync instead of re-reading it from the DB
+    // on every status change; only this worker writes to the row while it is being processed.
+    private void transition(Document document, DocumentStatus status, String reason, Integer retryCount) {
+        String documentId = document.getDocumentId();
         DocumentStatus previous = document.getStatus();
         Instant now = Instant.now();
 
@@ -142,9 +142,8 @@ public class DocumentProcessingService {
                 documentId, retryCount, previous, status, reason);
     }
 
-    private void markProcessed(String documentId, Map<String, Object> extractedData, int attempt) {
-        Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new IllegalStateException("Document not found: " + documentId));
+    private void markProcessed(Document document, Map<String, Object> extractedData, int attempt) {
+        String documentId = document.getDocumentId();
         DocumentStatus previous = document.getStatus();
         Instant now = Instant.now();
 
@@ -161,7 +160,8 @@ public class DocumentProcessingService {
 
     private void safelyMarkErrored(String documentId) {
         try {
-            transition(documentId, DocumentStatus.FAILED, "ERROR", null);
+            documentRepository.findById(documentId)
+                    .ifPresent(document -> transition(document, DocumentStatus.FAILED, "ERROR", null));
         } catch (Exception inner) {
             log.error("documentId={} failed to record FAILED status after unexpected error", documentId, inner);
         }

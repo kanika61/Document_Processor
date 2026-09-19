@@ -242,6 +242,12 @@ change — only what sits behind the async trigger. File storage would move to S
 object key instead of a local filesystem path, behind the same `FileStorage` interface — that
 interface exists specifically so this swap doesn't touch business logic.
 
+**Status updates at scale.** The detail page currently polls every 3s while a document is in
+flight. At that scale, polling would be replaced with Server-Sent Events: the worker publishes
+each status change (e.g. via the queue or Redis pub/sub) and a streaming endpoint (Spring
+`SseEmitter`) pushes it to subscribed browsers, so idle viewers cost nothing. The existing
+`GET /documents/{id}` and `/history` endpoints stay for the initial load.
+
 **Known limitation — orphaned files.** If the disk write in the upload flow succeeds but the
 subsequent `documents` row insert fails, the file is left on disk with no corresponding row.
 This is treated as acceptable for this scope; a production system would run a periodic
