@@ -45,7 +45,12 @@ export default function UploadPage() {
       if (input) input.value = "";
     } catch (err) {
       if (err.status === 409) {
-        toast.info(err.body?.message || err.message);
+        const reason = err.body?.failureReason;
+        const message = err.body?.message || err.message;
+        // A duplicate of a previously failed file is an error the user must act on; a plain
+        // "already uploaded" duplicate isn't, so it stays informational.
+        if (reason) toast.error(`${message} (${reason})`);
+        else toast.info(message);
       } else {
         toast.error(err.body?.message || err.message);
       }

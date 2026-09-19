@@ -130,7 +130,7 @@ public class DocumentService {
         }
 
         throw new DocumentConflictException("Non-retryable duplicate", conflictBody(
-                "This document already failed and reprocessing will not change the result",
+                "This document cannot be uploaded",
                 existing, existing.getFailureReason()));
     }
 
