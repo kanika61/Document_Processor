@@ -74,9 +74,12 @@ export default function DocumentListPage() {
 
   useEffect(() => {
     loadList();
+  }, [loadList]);
+
+  // Stats are global totals, independent of the filters — fetch once per page visit.
+  useEffect(() => {
     loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, documentType, uploadDate, page]);
+  }, [loadStats]);
 
   function updateFilter(key, value) {
     const next = new URLSearchParams(searchParams);
