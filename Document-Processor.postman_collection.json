@@ -1,0 +1,198 @@
+{
+  "info": {
+    "_postman_id": "3a64672c-8cd8-4a35-9681-3f71ce45c98f",
+    "name": "Document-Processor",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58359166",
+    "_collection_link": "https://go.postman.co/collection/58359166-3a64672c-8cd8-4a35-9681-3f71ce45c98f?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get document History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/documents/DOC-66c05586-c7f8-4503-94c5-eb22972f9b91/history",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "documents",
+            "DOC-66c05586-c7f8-4503-94c5-eb22972f9b91",
+            "history"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Document",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/documents/DOC-66c05586-c7f8-4503-94c5-eb22972f9b91",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "documents",
+            "DOC-66c05586-c7f8-4503-94c5-eb22972f9b91"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get documents By Filter",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/documents?status=UPLOADED&page=0&size=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "documents"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "UPLOADED"
+            },
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload File",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "*/*"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "en-GB,en;q=0.6"
+          },
+          {
+            "key": "Connection",
+            "value": "keep-alive"
+          },
+          {
+            "key": "Origin",
+            "value": "http://localhost:5173"
+          },
+          {
+            "key": "Referer",
+            "value": "http://localhost:5173/"
+          },
+          {
+            "key": "Sec-Fetch-Dest",
+            "value": "empty"
+          },
+          {
+            "key": "Sec-Fetch-Mode",
+            "value": "cors"
+          },
+          {
+            "key": "Sec-Fetch-Site",
+            "value": "same-site"
+          },
+          {
+            "key": "Sec-GPC",
+            "value": "1"
+          },
+          {
+            "key": "User-Agent",
+            "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+          },
+          {
+            "key": "sec-ch-ua",
+            "value": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Brave\";v=\"150\""
+          },
+          {
+            "key": "sec-ch-ua-mobile",
+            "value": "?0"
+          },
+          {
+            "key": "sec-ch-ua-platform",
+            "value": "\"macOS\""
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "documentType",
+              "value": "FINANCIAL_STATEMENT",
+              "type": "text"
+            },
+            {
+              "key": "metadata",
+              "value": "{\"sizeBytes\":81687}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/documents",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "documents"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Retry request",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/documents/DOC-9ea4a317-6dc6-4ea9-a64a-59790a934331/retry",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "documents",
+            "DOC-9ea4a317-6dc6-4ea9-a64a-59790a934331",
+            "retry"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
