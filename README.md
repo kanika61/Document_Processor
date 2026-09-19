@@ -8,7 +8,24 @@ backend/    Spring Boot + MySQL API — see backend/README.md
 frontend/   React + Vite UI — see frontend/README.md
 ```
 
-## Quickstart
+## Quickstart (Docker)
+
+Only Docker with Compose is needed — no JDK, Maven, Node or MySQL.
+
+```bash
+docker compose up --build
+```
+
+- UI: http://localhost:5173
+- API: http://localhost:8080
+- Stop with `Ctrl+C`; `docker compose down` keeps your data, `docker compose down -v` wipes it.
+
+Ports 5173 and 8080 must be free (stop any local dev servers first). The browser calls the API
+at `http://localhost:8080`, so run the stack on the same machine as the browser; to host it
+elsewhere, rebuild the frontend with `VITE_API_BASE_URL` set and update the CORS origins in
+`backend/.../config/WebConfig.java`. The database password (`root`) is for local demo use only.
+
+## Run without Docker
 
 ```bash
 # 1. Database

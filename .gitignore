@@ -10,6 +10,7 @@ frontend/.vite/
 
 # Local file storage created by the backend at runtime
 backend/uploaded-documents/
+uploaded-documents/
 
 # Editor / OS
 .idea/
