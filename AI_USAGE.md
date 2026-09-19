@@ -2,17 +2,15 @@
 
 ## Tools
 - Claude Code (Claude Sonnet 5), in the Claude desktop app.
-- <!-- Add any other AI tool you used, or delete this line. -->
 
 ## What I did vs. what AI did
 - **Me:** proposed the backend design (`backend/IMPLEMENTATION_PLAN.md`: stack, schema, endpoints, async processing, retry rules) and wrote the frontend plan, made the design decisions, reviewed the output, and directed the corrections below.
 - **Error handling:** I specified the requirements in my plan (clean `400`/`409`/`500` responses, no raw backend errors shown to users), edited the duplicate-upload error message myself, and asked for errors to show in red and successes in green. The AI wrote the exception-handling code from that.
 - **Testing:** I tested the flow end to end myself and created the Postman API collection (`Document-Processor.postman_collection.json`).
 - **Docker:** I gave the requirement (run the whole project with `docker compose up`) and reviewed and approved the plan; the AI proposed the design and created the files.
-- **AI:** wrote the code, tests and docs from my design, and ran the app end to end (curl and browser) to check it. I reviewed the output, ran it, and had it corrected.
+- **AI:** wrote most of the code, tests and docs from those plans.
 
 ## Significant AI-generated code
-- Backend: upload flow, async retry loop, mock PDF processor, validators, storage, error handling.
 - Frontend: three pages, toast, confirm dialog, spinner, dashboard tiles, retry button.
 - Unit tests (Mockito), the README / API contract docs, and the Docker setup (`docker-compose.yml` and the two Dockerfiles).
 
@@ -27,7 +25,6 @@
 - Decided to keep the DTOs as records rather than getter/setter classes: they are response objects that are built once and never changed, so they don't need setters.
 
 ## What I learned
-
 **Designing the backend**
 - **Idempotent uploads.** Hashing the file content (SHA-256) makes a duplicate detectable no matter what the file is called. It also gives a clean retry rule: the same bytes always give the same result, so a re-upload is only allowed when the earlier failure was flaky rather than deterministic.
 - **Not every failure deserves a retry.** A timeout is the processor's fault, so a retry can succeed. A validation failure is the document's fault, so a retry can only fail again. A timeout can also hide a document that will always fail validation, which is why a retry sometimes ends in a different error.
@@ -39,10 +36,8 @@
 
 **Frontend and the browser**
 - **StrictMode** double-mounts effects in dev, so it doubles API calls there only. A production build makes each call once.
-- **A `304` on `/upload`** is the browser revalidating a cached `index.html`. It isn't an API call. Client-side routing needs the server to fall back to `index.html` for unknown paths, which is what the nginx config does.
 - **Polling vs. push.** Polling every 3 seconds while a document is in flight is simple and enough here. Server-Sent Events is the scale-up path, and it is written into the docs.
 - **CORS** exists because the UI and API run on different origins. Without an explicit allow-list, the browser blocks every call.
-- This is my first React project, so I learned React (hooks, effects, routing, context) while building the frontend.
 
 **Running it anywhere**
 - **Images, containers and Compose.** An image is a template, a container is a running copy, and Compose wires several together on a private network. Pods are a Kubernetes idea, not part of Compose.
@@ -54,10 +49,5 @@
 - It also accepted correct pushback. When I argued against merging the DTOs or batching the writes, it changed its position.
 - The automated tests are Mockito unit tests only. I did the integration testing myself by running the full flow end to end (Postman, real MySQL, real disk). There is no automated integration test in the repo.
 
-## What I would learn next
-- **Automated integration tests** with Testcontainers and `@SpringBootTest`, to prove the real database and thread pool behave the way the mocks assume.
-- **Optimistic locking** (`@Version`) to protect a document from two workers writing at the same time, plus a real queue (SQS or RabbitMQ) to replace `@Async` at scale.
-- **Idempotent retries in a distributed system,** and how exactly-once delivery is really at-least-once with idempotent handlers.
 - **Observability:** structured logs, metrics and tracing, so "why did DOC-123 fail" can be answered without reading code.
-- **Frontend testing** and abort handling for in-flight requests.
-- **Security:** authentication, file-type checks that look inside the file and not just its extension, and upload size limits.
+
